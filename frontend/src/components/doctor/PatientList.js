@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './patientlist.css'; // Import the CSS file
+import './patientlist.css';
 
 const PatientList = () => {
   const [patients, setPatients] = useState([]);
@@ -39,13 +39,16 @@ const PatientList = () => {
     e.preventDefault();
     if (editingPatient) {
       try {
-        const response = await fetch(`http://localhost:8000/api/patients/${editingPatient.id}/`, {
+        const response = await fetch(`http://localhost:8000/api/patients/update_patient/${editingPatient.id}/`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ ...editingPatient, medicine_used: newMedicine }),
+          body: JSON.stringify({ medicine_used: newMedicine }),
         });
+  
+        const responseData = await response.json();
+  
         if (response.ok) {
           setPatients(patients.map(patient =>
             patient.id === editingPatient.id ? { ...patient, medicine_used: newMedicine } : patient
@@ -54,14 +57,16 @@ const PatientList = () => {
           setNewMedicine('');
           alert('Medicine updated successfully!');
         } else {
-          console.error('Failed to update medicine');
-          alert('Failed to update medicine');
+          console.error('Failed to update medicine:', responseData);
+          alert(`Failed to update medicine: ${responseData.error || response.statusText}`);
         }
       } catch (error) {
         console.error('Error updating medicine:', error);
+        alert(`Error updating medicine: ${error.message}`);
       }
     }
   };
+  
 
   const filteredPatients = patients.filter(patient => patient.id.toString().includes(searchId));
 
